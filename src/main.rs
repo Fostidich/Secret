@@ -186,7 +186,11 @@ fn combine_key(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, key: &[cha
 
 fn put_uppercase(block: &mut Vec<char>, key : &[char]) {
     let idx : usize = (get_value(&key[7]) % 8) as usize;
-    match get_value(&key[idx]) % 6 {
+    let mut os : u8 = 0;
+    for i in 0..8 {
+        os += get_value(&block[i]) / 2;
+    }
+    match (get_value(&key[idx]) + os / 2) % 6 {
         0 => {
             block[3] = (block[3] as u8 - 32) as char;
             block[2] = (block[2] as u8 - 32) as char;
