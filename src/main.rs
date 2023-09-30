@@ -10,28 +10,37 @@ fn main() {
         println!("ERROR: wrong key size!");
         return
     }
+
     let website : Vec<char> = args[1].chars().collect();
     let username : Vec<char> = args[2].chars().collect();
     let key : Vec<char> = args[3].chars().collect();
 
     let mut first_block : Vec<u8> = get_block(&website, &key);
     let mut second_block : Vec<u8> = get_block(&username, &key);
+    let key_ref = &key;
 
-    println!("{:?}\n{:?}", first_block, second_block);
-    println!();
-
-    for ch in key {
-        //swap_char(&mut first_block, &mut second_block, &ch);
-        //shift_rows(&mut first_block, &mut second_block, &ch);
-        //shift_columns(&mut first_block, &mut second_block, &ch);
-        combine_key(&mut first_block, &mut second_block, &key, &ch);
-
-        println!("{:?}\n{:?}", first_block, second_block);
-        println!();
+    for ch in key_ref {
+        swap_char(&mut first_block, &mut second_block, ch);
+        shift_rows(&mut first_block, &mut second_block, ch);
+        shift_columns(&mut first_block, &mut second_block, ch);
+        combine_key(&mut first_block, &mut second_block, key_ref, ch);
     }
 
+    let mut result_nums : Vec<u8> = vec![0; 8];
+    for i in 0..8 {
+        result_nums[i] = (first_block[i] + second_block[i]) / 2
+    }
+    let mut result : Vec<char> = vec!['-'; 9];
+    for i in 0..4 {
+        result[i] = (result_nums[i] % 26 + 97) as char
+    }
+    for i in 4..8 {
+        result[i+1] = (result_nums[i] % 10 + 48) as char
+    }
+    put_uppercase(&mut result, key_ref);
 
-    
+    let to_print : String = result.into_iter().collect();
+    println!("{}", to_print);
 }
 
 fn get_value(ch: &char) -> u8 {
@@ -172,5 +181,36 @@ fn combine_key(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, key: &[cha
                 first_block[i] = result[i]
             }
         }
+    }
+}
+
+fn put_uppercase(block: &mut Vec<char>, key : &[char]) {
+    let idx : usize = (get_value(&key[7]) % 8) as usize;
+    match get_value(&key[idx]) % 6 {
+        0 => {
+            block[3] = (block[3] as u8 - 32) as char;
+            block[2] = (block[2] as u8 - 32) as char;
+        }
+        1 => {
+            block[3] = (block[3] as u8 - 32) as char;
+            block[1] = (block[1] as u8 - 32) as char;
+        }
+        2 => {
+            block[2] = (block[2] as u8 - 32) as char;
+            block[1] = (block[1] as u8 - 32) as char;
+        }
+        3 => {
+            block[3] = (block[3] as u8 - 32) as char;
+            block[0] = (block[0] as u8 - 32) as char;
+        }
+        4 => {
+            block[2] = (block[2] as u8 - 32) as char;
+            block[0] = (block[0] as u8 - 32) as char;
+        }
+        5 => {
+            block[1] = (block[1] as u8 - 32) as char;
+            block[0] = (block[0] as u8 - 32) as char;
+        }
+        _ => {}
     }
 }
