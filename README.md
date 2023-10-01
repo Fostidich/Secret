@@ -1,6 +1,8 @@
 # Secret - SCRT
 A command line password manager.
 
-> ##### Usage:
-> scrt *website username key*<br>
-> aBcD-0123
+## Todo
+- [x] get function
+- [ ] list function
+- [ ] implement list addition from a new get
+- [ ] manage renewed entries

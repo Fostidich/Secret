@@ -5,6 +5,7 @@ mod functions {
 }
 
 use std::env;
+use std::path::PathBuf;
 use functions::help::scrt_help;
 use crate::functions::get::scrt_get;
 use crate::functions::list::{scrt_list_add, scrt_list_remove, scrt_list_show};
@@ -45,4 +46,14 @@ fn main() {
         return;
     }
     println!("ERROR: unknown command! Try using \"scrt help\"")
+}
+
+pub fn get_dir(path: &str) -> PathBuf {
+    //TODO: create file if not present
+    let mut current_dir = env::current_exe().expect("ERROR: Failed to get current directory!");
+    current_dir.pop();
+    current_dir.pop();
+    current_dir.pop();
+    current_dir.push(path);
+    return current_dir
 }
