@@ -1,13 +1,11 @@
-use serde::{Deserialize, Serialize};
+use chrono::{Datelike, Local};
 
-#[derive(Serialize, Deserialize)]
 struct Entry {
-    date: String,
+    date: Date,
     website: String,
-    username: String
+    username: String,
 }
 
-#[derive(Serialize, Deserialize)]
 struct Date {
     day: u8,
     month: u8,
@@ -15,13 +13,18 @@ struct Date {
 }
 
 pub fn scrt_list_add(website: String, username: String) {
-
+    let date_stamp = Local::now();
+    let entry = Entry {
+        date: Date {
+            day: date_stamp.day() as u8,
+            month: date_stamp.month() as u8,
+            year: date_stamp.year() as u16
+        },
+        website,
+        username,
+    };
 }
 
-pub fn scrt_list_remove(website: String, username: String) {
+pub fn scrt_list_remove(website: String, username: String) {}
 
-}
-
-pub fn scrt_list_show() {
-
-}
+pub fn scrt_list_show() {}
