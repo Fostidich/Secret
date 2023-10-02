@@ -1,7 +1,6 @@
 pub fn scrt_get(website: Vec<char>, username: Vec<char>, key: Vec<char>) {
     if key.len() != 8 {
-        println!("ERROR: wrong key size!");
-        return;
+        panic!("ERROR: wrong key size!")
     }
     let mut first_block: Vec<u8> = get_block(&website, &key);
     let mut second_block: Vec<u8> = get_block(&username, &key);

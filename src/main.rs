@@ -1,41 +1,42 @@
+/// Description.
+
 mod functions {
     pub mod help;
     pub mod get;
     pub mod list;
 }
 
-use std::env;
-use std::error::Error;
+use std::{env, fs};
 use std::fs::{File, OpenOptions};
 use std::io::{Seek, Write};
-use std::process::exit;
 use functions::help::scrt_help;
 use crate::functions::get::scrt_get;
 use crate::functions::list::{scrt_list_add, scrt_list_remove, scrt_list_show};
 
+const PATH_POPS: u8 = 3;
+
+/// Main function checks for input.
+///
+/// # Panics
+///
+/// It panics if arguments don't follow any command standard.
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
-        println!("ERROR: no command provided! Try using \"scrt help\"");
-        return;
+        panic!("ERROR: no command provided! Try using \"scrt help\"")
     } else if args[1] == "help" {
         if args.len() != 2 {
-            println!("ERROR: invalid arguments! Try using \"scrt help\"");
-            return;
+            panic!("ERROR: invalid arguments! Try using \"scrt help\"")
         }
         scrt_help();
-        return;
     } else if args[1] == "get" {
         if args.len() != 5 {
-            println!("ERROR: invalid arguments! Try using \"scrt help\"");
-            return;
+            panic!("ERROR: invalid arguments! Try using \"scrt help\"")
         }
         scrt_get(args[2].chars().collect(), args[3].chars().collect(), args[4].chars().collect());
-        return;
     } else if args[1] == "list" {
         if args.len() != 5 && args.len() != 3 {
-            println!("ERROR: invalid arguments! Try using \"scrt help\"");
-            return;
+            panic!("ERROR: invalid arguments! Try using \"scrt help\"")
         }
         if args[2] == "add" {
             scrt_list_add(args[3].chars().collect(), args[4].chars().collect())
@@ -44,57 +45,54 @@ fn main() {
         } else if args[2] == "show" {
             scrt_list_show()
         } else {
-            println!("ERROR: unknown command! Try using \"scrt help\"")
+            panic!("ERROR: unknown command! Try using \"scrt help\"")
         }
-        return;
+    } else {
+        panic!("ERROR: unknown command! Try using \"scrt help\"")
     }
-    println!("ERROR: unknown command! Try using \"scrt help\"")
 }
 
+/// Returns the file at the given path.
+/// If the file is not present, it will be created,
+/// along with all the necessary directories that are absent.
+///
+/// # Panics
+///
+/// This function may panic in a wide range of cases,
+/// covering many possible unrecoverable errors derived
+/// from operating with files.
+///
+/// # Examples
+///
+/// ```simple_usage
+/// let mut file = open_file("res/list.json");
+/// let mut buff = String::new();
+/// file.read_to_string(&mut buff).expect("unable to read");
+/// ```
 pub fn open_file(path: &str) -> File {
-    let steps_opening = || -> Result<File, Box<dyn Error>> {
-        let mut current_dir;
-        let file;
-        current_dir = env::current_exe()?;
-        for _i in 0..3 {
-            if !current_dir.pop() {
-                println!("ERROR: failed to retrieve path!");
-                exit(1)
-            }
+    let mut current_dir = env::current_exe().expect("ERROR: failed to get current directory!");
+    for _i in 0..PATH_POPS {
+        if !current_dir.pop() {
+            panic!("ERROR: failed to retrieve path!")
         }
-        current_dir.push(path);
-        file = File::open(current_dir.clone())?;
-        Ok(file)
-    };
-    let steps_creating = || -> Result<File, Box<dyn Error>> {
-        let mut current_dir;
-        let mut file;
-        current_dir = env::current_exe()?;
-        for _i in 0..3 {
-            if !current_dir.pop() {
-                println!("ERROR: failed to retrieve path!");
-                exit(1)
-            }
-        }
-        current_dir.push(path);
-        file = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .open(current_dir.clone())?;
-        write!(&mut file, "[]")?;
-        file.rewind()?;
-        Ok(file)
-    };
-    match steps_opening() {
-        Err(_) => {
-            match steps_creating() {
-                Err(_) => {
-                    println!("ERROR: failed to open/create file!");
-                    exit(1)}
-                Ok(file) => {file}
-            }
-        }
-        Ok(file) => {file}
     }
+    current_dir.push(path);
+    if let Some(parent) = current_dir.parent() {
+        if !parent.exists() {
+            fs::create_dir_all(parent).expect("ERROR: failed to create directories!");
+        }
+    }
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .truncate(false)
+        .create(true)
+        .open(&current_dir)
+        .expect("ERROR: failed to open or create file!");
+    let metadata = fs::metadata(&current_dir).expect("ERROR: failed to get file metadata!");
+    if metadata.len() == 0 {
+        file.write_all(b"[]").expect("ERROR: failed to initialize file\nWARNING: file may be corrupted!");
+        file.rewind().expect("ERROR: failed to navigate into file!")
+    }
+    file
 }

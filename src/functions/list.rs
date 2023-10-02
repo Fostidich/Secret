@@ -1,5 +1,4 @@
 use std::io::Read;
-use std::process::exit;
 use chrono::{Datelike, Local};
 use serde::{Deserialize, Serialize};
 use crate::open_file;
@@ -59,16 +58,14 @@ pub fn scrt_list_show() {
     let mut buff = String::new();
     match file.read_to_string(&mut buff) {
         Err(_) => {
-            println!("ERROR: unable to read from file!");
-            exit(1)
+            panic!("ERROR: unable to read from file!")
         }
         Ok(_) => {}
     }
     let list : Vec<Entry>;
     match serde_json::from_str(&buff) {
         Err(_) => {
-            println!("ERROR: unable to retrieve JSON data from file!");
-            exit(1)
+            panic!("ERROR: unable to retrieve json data from file!")
         }
         Ok(data) => {list = data}
     }
