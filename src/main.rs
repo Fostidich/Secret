@@ -5,7 +5,10 @@ mod functions {
 }
 
 use std::env;
-use std::path::PathBuf;
+use std::error::Error;
+use std::fs::{File, OpenOptions};
+use std::io::{Seek, Write};
+use std::process::exit;
 use functions::help::scrt_help;
 use crate::functions::get::scrt_get;
 use crate::functions::list::{scrt_list_add, scrt_list_remove, scrt_list_show};
@@ -48,12 +51,50 @@ fn main() {
     println!("ERROR: unknown command! Try using \"scrt help\"")
 }
 
-pub fn get_dir(path: &str) -> PathBuf {
-    //TODO: create file if not present
-    let mut current_dir = env::current_exe().expect("ERROR: Failed to get current directory!");
-    current_dir.pop();
-    current_dir.pop();
-    current_dir.pop();
-    current_dir.push(path);
-    return current_dir
+pub fn open_file(path: &str) -> File {
+    let steps_opening = || -> Result<File, Box<dyn Error>> {
+        let mut current_dir;
+        let file;
+        current_dir = env::current_exe()?;
+        for _i in 0..3 {
+            if !current_dir.pop() {
+                println!("ERROR: failed to retrieve path!");
+                exit(1)
+            }
+        }
+        current_dir.push(path);
+        file = File::open(current_dir.clone())?;
+        Ok(file)
+    };
+    let steps_creating = || -> Result<File, Box<dyn Error>> {
+        let mut current_dir;
+        let mut file;
+        current_dir = env::current_exe()?;
+        for _i in 0..3 {
+            if !current_dir.pop() {
+                println!("ERROR: failed to retrieve path!");
+                exit(1)
+            }
+        }
+        current_dir.push(path);
+        file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(current_dir.clone())?;
+        write!(&mut file, "[]")?;
+        file.rewind()?;
+        Ok(file)
+    };
+    match steps_opening() {
+        Err(_) => {
+            match steps_creating() {
+                Err(_) => {
+                    println!("ERROR: failed to open/create file!");
+                    exit(1)}
+                Ok(file) => {file}
+            }
+        }
+        Ok(file) => {file}
+    }
 }

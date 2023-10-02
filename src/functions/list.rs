@@ -1,8 +1,8 @@
-use std::fs::File;
 use std::io::Read;
+use std::process::exit;
 use chrono::{Datelike, Local};
 use serde::{Deserialize, Serialize};
-use crate::get_dir;
+use crate::open_file;
 
 #[derive(Serialize, Deserialize)]
 struct Entry {
@@ -41,7 +41,7 @@ pub fn scrt_list_add(website: String, username: String) {
         website,
         username,
     };
-    let mut file = File::open(get_dir("res/list.json")).unwrap();
+    let mut file = open_file("res/list.json");
     let mut buff = String::new();
     file.read_to_string(&mut buff).unwrap();
     let mut list : Vec<Entry> = serde_json::from_str(&buff).unwrap();
@@ -50,15 +50,32 @@ pub fn scrt_list_add(website: String, username: String) {
     //TODO: dump entries back on json file
 }
 
-pub fn scrt_list_remove(website: String, username: String) {
+pub fn scrt_list_remove(_website: String, _username: String) {
     //TODO: remove from json file
 }
 
 pub fn scrt_list_show() {
-    let mut file = File::open(get_dir("res/list.json")).unwrap();
+    let mut file = open_file("res/list.json");
     let mut buff = String::new();
-    file.read_to_string(&mut buff).unwrap();
-    let list : Vec<Entry> = serde_json::from_str(&buff).unwrap();
+    match file.read_to_string(&mut buff) {
+        Err(_) => {
+            println!("ERROR: unable to read from file!");
+            exit(1)
+        }
+        Ok(_) => {}
+    }
+    let list : Vec<Entry>;
+    match serde_json::from_str(&buff) {
+        Err(_) => {
+            println!("ERROR: unable to retrieve JSON data from file!");
+            exit(1)
+        }
+        Ok(data) => {list = data}
+    }
+    if list.is_empty() {
+        println!("No entries to show.");
+        return
+    }
     for entry in list {
         println!("{}", entry.to_string());
     }

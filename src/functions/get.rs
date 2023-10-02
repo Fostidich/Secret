@@ -25,17 +25,17 @@ pub fn scrt_get(website: Vec<char>, username: Vec<char>, key: Vec<char>) {
     }
     put_uppercase(&mut result, key_ref);
     let to_print: String = result.into_iter().collect();
-    println!("{}", to_print);
+    println!("{}", to_print)
 }
 
 fn get_value(ch: &char) -> u8 {
-    return match ch {
+    match ch {
         'A'..='Z' => *ch as u8 - 29,
         'a'..='z' => *ch as u8 - 87,
         '0'..='9' => *ch as u8 - 48,
         '.' => 62,
         _ => 63
-    };
+    }
 }
 
 fn get_block(chars: &[char], key: &[char]) -> Vec<u8> {
@@ -57,7 +57,7 @@ fn get_block(chars: &[char], key: &[char]) -> Vec<u8> {
     for i in 0..8 {
         result[i] = result[i] % 64
     }
-    return result;
+    result
 }
 
 fn swap_char(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) {
