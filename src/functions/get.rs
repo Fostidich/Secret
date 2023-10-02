@@ -1,3 +1,10 @@
+/// The get function prints the hash calculated as a combination of the website, username and key strings.
+/// The strategy used distantly resembles the AES approach.
+/// Format used is "abCD-1234", granting 4 letters (2 of which randomly uppercase) and 4 digits.
+///
+/// # Panics
+///
+/// It panics if the key doesn't have the correct length.
 pub fn scrt_get(website: Vec<char>, username: Vec<char>, key: Vec<char>) {
     if key.len() != 8 {
         panic!("ERROR: wrong key size!")
@@ -27,6 +34,7 @@ pub fn scrt_get(website: Vec<char>, username: Vec<char>, key: Vec<char>) {
     println!("{}", to_print)
 }
 
+/// Given a char, it returns a number between 0 and 63.
 fn get_value(ch: &char) -> u8 {
     match ch {
         'A'..='Z' => *ch as u8 - 29,
@@ -37,6 +45,7 @@ fn get_value(ch: &char) -> u8 {
     }
 }
 
+/// Given a string and a key, a vector of numbers is returned based on input.
 fn get_block(chars: &[char], key: &[char]) -> Vec<u8> {
     let mut result: Vec<u8> = vec![0; 8];
     let mut i: usize = 0;
@@ -59,6 +68,8 @@ fn get_block(chars: &[char], key: &[char]) -> Vec<u8> {
     result
 }
 
+/// Given two blocks and a char, elements of the blocks are swapped.
+/// The swap occurs both inside the same block and between them.
 fn swap_char(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) {
     let idx: usize = get_value(ch) as usize % 4;
     let tmp: u8 = first_block[idx];
@@ -68,6 +79,8 @@ fn swap_char(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) {
     second_block[idx] = tmp;
 }
 
+/// Given two blocks and a char, elements of the blocks are shifted horizontally.
+/// Shift quantity and direction is based on input.
 fn shift_rows(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) {
     let mut offset: u8 = get_value(ch) % 8;
     if get_value(ch) % 2 == 0 {
@@ -97,6 +110,7 @@ fn shift_rows(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) 
     }
 }
 
+/// Given a vector, elements are shifted left once.
 fn left_shift(block: &mut Vec<u8>) {
     let idx: usize = block.len() - 1;
     let tmp: u8 = block[0];
@@ -106,6 +120,7 @@ fn left_shift(block: &mut Vec<u8>) {
     block[idx] = tmp
 }
 
+/// Given a vector, elements are shifted right once.
 fn right_shift(block: &mut Vec<u8>) {
     let idx: usize = block.len() - 1;
     let tmp: u8 = block[idx];
@@ -115,6 +130,8 @@ fn right_shift(block: &mut Vec<u8>) {
     block[0] = tmp
 }
 
+/// Given two blocks and a char, elements of the blocks are shifted vertically.
+/// Shift location is based on input.
 fn shift_columns(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) {
     let mut idx: usize = get_value(ch) as usize % 8;
     let quantity: u8 = get_value(ch) / 8 + 1;
@@ -131,6 +148,8 @@ fn shift_columns(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &cha
     }
 }
 
+/// Given three blocks and a char, elements of the blocks are combined together to modify the values of
+/// the first two blocks.
 fn combine_key(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, key: &[char], ch: &char) {
     let mut result: Vec<u8> = vec![0; 8];
     let res_offset: usize = get_value(ch) as usize % 8;
@@ -168,6 +187,7 @@ fn combine_key(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, key: &[cha
     }
 }
 
+/// Given a string and a char, some letters of the string will be set to uppercase based on input.
 fn put_uppercase(block: &mut Vec<char>, key: &[char]) {
     let idx: usize = (get_value(&key[7]) % 8) as usize;
     let mut os: u8 = 0;

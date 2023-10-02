@@ -3,6 +3,7 @@ A command line password manager.
 
 ## Todo
 - [x] get function
-- [ ] list function
+- [x] list function
+- [ ] destroy function
 - [ ] implement list addition from a new get
 - [ ] manage renewed entries

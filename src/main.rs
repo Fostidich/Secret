@@ -1,5 +1,3 @@
-/// Description.
-
 mod functions {
     pub mod help;
     pub mod get;
@@ -9,13 +7,14 @@ mod functions {
 use std::{env, fs};
 use std::fs::{File, OpenOptions};
 use std::io::{Seek, Write};
-use functions::help::scrt_help;
 use crate::functions::get::scrt_get;
+use crate::functions::help::scrt_help;
 use crate::functions::list::{scrt_list_add, scrt_list_remove, scrt_list_show};
 
+/// The constants contains the number of pops to be made from the executable to reach the program root folder.
 const PATH_POPS: u8 = 3;
 
-/// Main function checks for input.
+/// Main function checks for input, branching onto requested function.
 ///
 /// # Panics
 ///
@@ -55,6 +54,7 @@ fn main() {
 /// Returns the file at the given path.
 /// If the file is not present, it will be created,
 /// along with all the necessary directories that are absent.
+/// The file is in read-write mode.
 ///
 /// # Panics
 ///
