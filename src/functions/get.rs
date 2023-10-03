@@ -1,13 +1,16 @@
+use std::process::exit;
+
 /// The get function prints the hash calculated as a combination of the website, username and key strings.
 /// The strategy used distantly resembles the AES approach.
 /// Format used is "abCD-1234", granting 4 letters (2 of which randomly uppercase) and 4 digits.
 ///
-/// # Panics
+/// # Errors
 ///
-/// It panics if the key doesn't have the correct length.
+/// Execution stops if the key doesn't have the correct length.
 pub fn scrt_get(website: Vec<char>, username: Vec<char>, key: Vec<char>) {
     if key.len() != 8 {
-        panic!("ERROR: wrong key size!")
+        eprintln!("ERROR: wrong key size!");
+        exit(1)
     }
     let mut first_block: Vec<u8> = get_block(&website, &key);
     let mut second_block: Vec<u8> = get_block(&username, &key);

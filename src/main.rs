@@ -7,6 +7,7 @@ mod functions {
 use std::{env, fs};
 use std::fs::{File, OpenOptions};
 use std::io::{Seek, Write};
+use std::process::exit;
 use crate::functions::get::scrt_get;
 use crate::functions::help::scrt_help;
 use crate::functions::list::{scrt_list_add, scrt_list_remove, scrt_list_show};
@@ -16,26 +17,30 @@ const PATH_POPS: u8 = 3;
 
 /// Main function checks for input, branching onto requested function.
 ///
-/// # Panics
+/// # Errors
 ///
-/// It panics if arguments don't follow any command standard.
+/// Execution stops if arguments don't follow any command standard.
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
-        panic!("ERROR: no command provided! Try using \"scrt help\"")
+        eprintln!("ERROR: no command provided! Try using \"scrt help\"");
+        exit(1)
     } else if args[1] == "help" {
         if args.len() != 2 {
-            panic!("ERROR: invalid arguments! Try using \"scrt help\"")
+            eprintln!("ERROR: invalid arguments! Try using \"scrt help\"");
+            exit(1)
         }
         scrt_help();
     } else if args[1] == "get" {
         if args.len() != 5 {
-            panic!("ERROR: invalid arguments! Try using \"scrt help\"")
+            eprintln!("ERROR: invalid arguments! Try using \"scrt help\"");
+            exit(1)
         }
         scrt_get(args[2].chars().collect(), args[3].chars().collect(), args[4].chars().collect());
     } else if args[1] == "list" {
         if args.len() != 5 && args.len() != 3 {
-            panic!("ERROR: invalid arguments! Try using \"scrt help\"")
+            eprintln!("ERROR: invalid arguments! Try using \"scrt help\"");
+            exit(1)
         }
         if args[2] == "add" {
             scrt_list_add(args[3].chars().collect(), args[4].chars().collect())
@@ -44,10 +49,12 @@ fn main() {
         } else if args[2] == "show" {
             scrt_list_show()
         } else {
-            panic!("ERROR: unknown command! Try using \"scrt help\"")
+            eprintln!("ERROR: unknown command! Try using \"scrt help\"");
+            exit(1)
         }
     } else {
-        panic!("ERROR: unknown command! Try using \"scrt help\"")
+        eprintln!("ERROR: unknown command! Try using \"scrt help\"");
+        exit(1)
     }
 }
 
@@ -55,6 +62,10 @@ fn main() {
 /// If the file is not present, it will be created,
 /// along with all the necessary directories that are absent.
 /// The file is in read-write mode.
+///
+/// # Errors
+///
+/// Execution stops if program directory tree is incorrect.
 ///
 /// # Panics
 ///
@@ -73,7 +84,8 @@ pub fn open_file(path: &str) -> File {
     let mut current_dir = env::current_exe().expect("ERROR: failed to get current directory!");
     for _i in 0..PATH_POPS {
         if !current_dir.pop() {
-            panic!("ERROR: failed to retrieve path!")
+            eprintln!("ERROR: failed to retrieve path!");
+            exit(1)
         }
     }
     current_dir.push(path);

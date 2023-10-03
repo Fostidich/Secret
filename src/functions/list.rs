@@ -1,4 +1,5 @@
 use std::io::{Read, Seek, SeekFrom, Write};
+use std::process::exit;
 use chrono::{Datelike, Local};
 use serde::{Deserialize, Serialize};
 use crate::open_file;
@@ -44,6 +45,14 @@ impl Date {
 /// Given entry is added to the saved list.
 /// Duplicates will be ignored.
 ///
+/// # Errors
+///
+/// Execution stops in case of failure while trying to read the content of the file.
+///
+/// # Panics
+///
+/// It panics if errors are encountered while updating the file content.
+///
 /// (See also [Entry])
 pub fn scrt_list_add(website: String, username: String) {
     let date_stamp = Local::now();
@@ -60,14 +69,16 @@ pub fn scrt_list_add(website: String, username: String) {
     let mut buff = String::new();
     match file.read_to_string(&mut buff) {
         Err(_) => {
-            panic!("ERROR: unable to read from file!")
+            eprintln!("ERROR: unable to read from file!");
+            exit(1);
         }
         Ok(_) => {}
     }
     let mut list: Vec<Entry>;
     match serde_json::from_str(&buff) {
         Err(_) => {
-            panic!("ERROR: unable to retrieve json data from file!")
+            eprintln!("ERROR: unable to retrieve json data from file!");
+            exit(1);
         }
         Ok(data) => { list = data }
     }
@@ -85,6 +96,14 @@ pub fn scrt_list_add(website: String, username: String) {
 /// Given entry is removed from the saved list.
 /// If entry is absent, it will be ignored.
 ///
+/// # Errors
+///
+/// Execution stops in case of failure while trying to read the content of the file.
+///
+/// # Panics
+///
+/// It panics if errors are encountered while updating the file content.
+///
 /// (See also [Entry])
 pub fn scrt_list_remove(website: String, username: String) {
     let date_stamp = Local::now();
@@ -101,14 +120,16 @@ pub fn scrt_list_remove(website: String, username: String) {
     let mut buff = String::new();
     match file.read_to_string(&mut buff) {
         Err(_) => {
-            panic!("ERROR: unable to read from file!")
+            eprintln!("ERROR: unable to read from file!");
+            exit(1)
         }
         Ok(_) => {}
     }
     let mut list: Vec<Entry>;
     match serde_json::from_str(&buff) {
         Err(_) => {
-            panic!("ERROR: unable to retrieve json data from file!")
+            eprintln!("ERROR: unable to retrieve json data from file!");
+            exit(1)
         }
         Ok(data) => { list = data }
     }
@@ -128,20 +149,26 @@ pub fn scrt_list_remove(website: String, username: String) {
 
 /// The list of the saved entries is printed.
 ///
+/// # Errors
+///
+/// Execution stops in case of failure while trying to read the content of the file.
+///
 /// (See also [Entry])
 pub fn scrt_list_show() {
     let mut file = open_file("res/list.json");
     let mut buff = String::new();
     match file.read_to_string(&mut buff) {
         Err(_) => {
-            panic!("ERROR: unable to read from file!")
+            eprintln!("ERROR: unable to read from file!");
+            exit(1)
         }
         Ok(_) => {}
     }
     let list: Vec<Entry>;
     match serde_json::from_str(&buff) {
         Err(_) => {
-            panic!("ERROR: unable to retrieve json data from file!")
+            eprintln!("ERROR: unable to retrieve json data from file!");
+            exit(1)
         }
         Ok(data) => { list = data }
     }
