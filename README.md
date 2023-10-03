@@ -5,6 +5,6 @@ A command line password manager.
 - [x] get function
 - [x] list function
 - [ ] destroy function
-- [ ] implement a stderr message printer for Err(_) in Result
+- [ ] error management system, by codes, to avoid panics
 - [ ] implement list addition from a new get
 - [ ] manage renewed entries
