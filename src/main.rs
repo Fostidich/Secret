@@ -1,16 +1,22 @@
+pub mod errors {
+    pub mod unwrapping;
+}
+
 mod functions {
     pub mod help;
     pub mod get;
     pub mod list;
 }
 
+
 use std::{env, fs};
 use std::fs::{File, OpenOptions};
 use std::io::{Seek, Write};
 use std::process::exit;
-use crate::functions::get::scrt_get;
-use crate::functions::help::scrt_help;
-use crate::functions::list::{scrt_list_add, scrt_list_remove, scrt_list_show};
+use functions::get::scrt_get;
+use functions::help::scrt_help;
+use functions::list::{scrt_list_add, scrt_list_remove, scrt_list_show};
+use crate::errors::unwrapping::Catch;
 
 /// The constants contains the number of pops to be made from the executable to reach the program root folder.
 const PATH_POPS: u8 = 3;
@@ -81,7 +87,7 @@ fn main() {
 /// file.read_to_string(&mut buff).expect("unable to read");
 /// ```
 pub fn open_file(path: &str) -> File {
-    let mut current_dir = env::current_exe().expect("ERROR: failed to get current directory!");
+    let mut current_dir = env::current_exe().catch("ERROR: failed to get current directory!");
     for _i in 0..PATH_POPS {
         if !current_dir.pop() {
             eprintln!("ERROR: failed to retrieve path!");
