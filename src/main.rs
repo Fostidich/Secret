@@ -19,7 +19,7 @@ use crate::errors::codes::{DIR_NOT_FOUND, FILE_FAILURE, INVALID_ARGUMENTS, IO_ER
 use crate::errors::exiting::{Catch, end};
 
 /// The constants contains the number of pops to be made from the executable to reach the program root folder.
-const PATH_POPS: u8 = 3;
+const PATH_POPS: u8 = 1;
 
 /// Main function checks for input, branching onto requested function.
 ///
