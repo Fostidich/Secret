@@ -52,10 +52,13 @@ fn get_value(ch: &char) -> u8 {
 fn get_block(chars: &[char], key: &[char]) -> Vec<u8> {
     let mut result: Vec<u8> = vec![0; 8];
     let mut i: usize = 0;
-    for j in 1..8 {
-        if get_value(&key[j]) < 32 {
+    for ch in key {
+        if get_value(ch) < 32 {
             i += 1
         }
+    }
+    if i != 0 {
+        i -= 1;
     }
     for ch in chars {
         result[i] += get_value(ch);
@@ -65,15 +68,15 @@ fn get_block(chars: &[char], key: &[char]) -> Vec<u8> {
             i = 0
         }
     }
-    for i in 0..8 {
-        result[i] = result[i] % 64
+    for i in result.iter_mut() {
+        *i %= 64;
     }
     result
 }
 
 /// Given two blocks and a char, elements of the blocks are swapped.
 /// The swap occurs both inside the same block and between them.
-fn swap_char(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) {
+fn swap_char(first_block: &mut [u8], second_block: &mut [u8], ch: &char) {
     let idx: usize = get_value(ch) as usize % 4;
     let tmp: u8 = first_block[idx];
     first_block[idx] = first_block[idx + 4];
@@ -84,7 +87,7 @@ fn swap_char(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) {
 
 /// Given two blocks and a char, elements of the blocks are shifted horizontally.
 /// Shift quantity and direction is based on input.
-fn shift_rows(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) {
+fn shift_rows(first_block: &mut [u8], second_block: &mut [u8], ch: &char) {
     let mut offset: u8 = get_value(ch) % 8;
     if get_value(ch) % 2 == 0 {
         for _i in 0..offset {
@@ -93,7 +96,7 @@ fn shift_rows(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) 
         if offset < 4 {
             offset += 4
         } else {
-            offset += 4
+            offset -= 4
         }
         for _i in 0..offset {
             right_shift(second_block)
@@ -105,7 +108,7 @@ fn shift_rows(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) 
         if offset < 4 {
             offset += 4
         } else {
-            offset += 4
+            offset -= 4
         }
         for _i in 0..offset {
             right_shift(first_block)
@@ -114,7 +117,7 @@ fn shift_rows(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) 
 }
 
 /// Given a vector, elements are shifted left once.
-fn left_shift(block: &mut Vec<u8>) {
+fn left_shift(block: &mut [u8]) {
     let idx: usize = block.len() - 1;
     let tmp: u8 = block[0];
     for i in 1..block.len() {
@@ -124,7 +127,7 @@ fn left_shift(block: &mut Vec<u8>) {
 }
 
 /// Given a vector, elements are shifted right once.
-fn right_shift(block: &mut Vec<u8>) {
+fn right_shift(block: &mut [u8]) {
     let idx: usize = block.len() - 1;
     let tmp: u8 = block[idx];
     for i in (0..block.len() - 1).rev() {
@@ -135,7 +138,7 @@ fn right_shift(block: &mut Vec<u8>) {
 
 /// Given two blocks and a char, elements of the blocks are shifted vertically.
 /// Shift location is based on input.
-fn shift_columns(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &char) {
+fn shift_columns(first_block: &mut [u8], second_block: &mut [u8], ch: &char) {
     let mut idx: usize = get_value(ch) as usize % 8;
     let quantity: u8 = get_value(ch) / 8 + 1;
     let mut tmp: u8;
@@ -153,7 +156,7 @@ fn shift_columns(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, ch: &cha
 
 /// Given three blocks and a char, elements of the blocks are combined together to modify the values of
 /// the first two blocks.
-fn combine_key(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, key: &[char], ch: &char) {
+fn combine_key(first_block: &mut [u8], second_block: &mut [u8], key: &[char], ch: &char) {
     let mut result: Vec<u8> = vec![0; 8];
     let res_offset: usize = get_value(ch) as usize % 8;
     let mut first_idx: usize = get_value(ch) as usize / 8;
@@ -191,13 +194,13 @@ fn combine_key(first_block: &mut Vec<u8>, second_block: &mut Vec<u8>, key: &[cha
 }
 
 /// Given a string and a char, some letters of the string will be set to uppercase based on input.
-fn put_uppercase(block: &mut Vec<char>, key: &[char]) {
+fn put_uppercase(block: &mut [char], key: &[char]) {
     let idx: usize = (get_value(&key[7]) % 8) as usize;
     let mut os: u8 = 0;
-    for i in 0..8 {
-        os += get_value(&block[i]) / 2;
+    for ch in &mut *block {
+        os += get_value(ch) / 4;
     }
-    match (get_value(&key[idx]) + os / 2) % 6 {
+    match (get_value(&key[idx]) + os) % 6 {
         0 => {
             block[3] = (block[3] as u8 - 32) as char;
             block[2] = (block[2] as u8 - 32) as char;
