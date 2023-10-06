@@ -1,5 +1,6 @@
-pub mod errors {
-    pub mod unwrapping;
+mod errors {
+    pub mod exiting;
+    pub mod codes;
 }
 
 mod functions {
@@ -8,15 +9,14 @@ mod functions {
     pub mod list;
 }
 
-
 use std::{env, fs};
 use std::fs::{File, OpenOptions};
 use std::io::{Seek, Write};
-use std::process::exit;
 use functions::get::scrt_get;
 use functions::help::scrt_help;
 use functions::list::{scrt_list_add, scrt_list_remove, scrt_list_show};
-use crate::errors::unwrapping::Catch;
+use crate::errors::codes::{DIR_NOT_FOUND, FILE_FAILURE, INVALID_ARGUMENTS, IO_ERROR, NO_COMMAND_PROVIDED, NO_DATA_FOUND, UNKNOWN_COMMAND};
+use crate::errors::exiting::{Catch, end};
 
 /// The constants contains the number of pops to be made from the executable to reach the program root folder.
 const PATH_POPS: u8 = 3;
@@ -29,24 +29,20 @@ const PATH_POPS: u8 = 3;
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
-        eprintln!("ERROR: no command provided! Try using \"scrt help\"");
-        exit(1)
+        end(NO_COMMAND_PROVIDED)
     } else if args[1] == "help" {
         if args.len() != 2 {
-            eprintln!("ERROR: invalid arguments! Try using \"scrt help\"");
-            exit(1)
+            end(INVALID_ARGUMENTS)
         }
         scrt_help();
     } else if args[1] == "get" {
         if args.len() != 5 {
-            eprintln!("ERROR: invalid arguments! Try using \"scrt help\"");
-            exit(1)
+            end(INVALID_ARGUMENTS)
         }
         scrt_get(args[2].chars().collect(), args[3].chars().collect(), args[4].chars().collect());
     } else if args[1] == "list" {
         if args.len() != 5 && args.len() != 3 {
-            eprintln!("ERROR: invalid arguments! Try using \"scrt help\"");
-            exit(1)
+            end(INVALID_ARGUMENTS)
         }
         if args[2] == "add" {
             scrt_list_add(args[3].chars().collect(), args[4].chars().collect())
@@ -55,12 +51,10 @@ fn main() {
         } else if args[2] == "show" {
             scrt_list_show()
         } else {
-            eprintln!("ERROR: unknown command! Try using \"scrt help\"");
-            exit(1)
+            end(UNKNOWN_COMMAND)
         }
     } else {
-        eprintln!("ERROR: unknown command! Try using \"scrt help\"");
-        exit(1)
+        end(UNKNOWN_COMMAND)
     }
 }
 
@@ -70,12 +64,8 @@ fn main() {
 /// The file is in read-write mode.
 ///
 /// # Errors
-///
-/// Execution stops if program directory tree is incorrect.
-///
-/// # Panics
-///
-/// This function may panic in a wide range of cases,
+///q
+/// This function may stop execution due to a wide range of cases,
 /// covering many possible unrecoverable errors derived
 /// from operating with files.
 ///
@@ -87,17 +77,16 @@ fn main() {
 /// file.read_to_string(&mut buff).expect("unable to read");
 /// ```
 pub fn open_file(path: &str) -> File {
-    let mut current_dir = env::current_exe().catch("ERROR: failed to get current directory!");
+    let mut current_dir = env::current_exe().catch(DIR_NOT_FOUND);
     for _i in 0..PATH_POPS {
         if !current_dir.pop() {
-            eprintln!("ERROR: failed to retrieve path!");
-            exit(1)
+            end(DIR_NOT_FOUND)
         }
     }
     current_dir.push(path);
     if let Some(parent) = current_dir.parent() {
         if !parent.exists() {
-            fs::create_dir_all(parent).expect("ERROR: failed to create directories!");
+            fs::create_dir_all(parent).catch(FILE_FAILURE)
         }
     }
     let mut file = OpenOptions::new()
@@ -106,11 +95,11 @@ pub fn open_file(path: &str) -> File {
         .truncate(false)
         .create(true)
         .open(&current_dir)
-        .expect("ERROR: failed to open or create file!");
-    let metadata = fs::metadata(&current_dir).expect("ERROR: failed to get file metadata!");
+        .catch(FILE_FAILURE);
+    let metadata = fs::metadata(&current_dir).catch(NO_DATA_FOUND);
     if metadata.len() == 0 {
-        file.write_all(b"[]").expect("ERROR: failed to initialize file\nWARNING: file may be corrupted!");
-        file.rewind().expect("ERROR: failed to navigate into file!")
+        file.write_all(b"[]").catch(IO_ERROR);
+        file.rewind().catch(FILE_FAILURE)
     }
     file
 }
