@@ -1,3 +1,5 @@
+use std::fmt;
+use std::fmt::Formatter;
 use std::io::{Read, Seek, SeekFrom, Write};
 use chrono::{Datelike, Local};
 use serde::{Deserialize, Serialize};
@@ -21,10 +23,9 @@ impl PartialEq for Entry {
     }
 }
 
-impl Entry {
-    /// Entry is converted in a string with format "\[date] website (username)".
-    fn to_string(&self) -> String {
-        format!("{} {} ({})", self.date.to_string(), self.website, self.username)
+impl fmt::Display for Entry {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{} {} ({})", self.date, self.website, self.username)
     }
 }
 
@@ -36,10 +37,9 @@ struct Date {
     year: u16,
 }
 
-impl Date {
-    /// Date is converted in a string with format "\[day-month-year]".
-    fn to_string(&self) -> String {
-        format!("[{}, {}, {}]", self.day, self.month, self.year)
+impl fmt::Display for Date {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "[{:02}, {:02}, {}]", self.day, self.month, self.year)
     }
 }
 
@@ -62,7 +62,7 @@ pub fn scrt_list_add(website: String, username: String) {
         website,
         username,
     };
-    let mut file = open_file("res/list.json");
+    let mut file = open_file("scrt-data/list.json");
     let mut buff = String::new();
     file.read_to_string(&mut buff).catch(IO_ERROR);
     let mut list: Vec<Entry> = serde_json::from_str(&buff).catch(SERDE_ERROR);
@@ -96,7 +96,7 @@ pub fn scrt_list_remove(website: String, username: String) {
         website,
         username,
     };
-    let mut file = open_file("res/list.json");
+    let mut file = open_file("scrt-data/list.json");
     let mut buff = String::new();
     file.read_to_string(&mut buff).catch(IO_ERROR);
     let mut list: Vec<Entry> = serde_json::from_str(&buff).catch(SERDE_ERROR);
@@ -122,7 +122,7 @@ pub fn scrt_list_remove(website: String, username: String) {
 ///
 /// (See also [Entry])
 pub fn scrt_list_show() {
-    let mut file = open_file("res/list.json");
+    let mut file = open_file("scrt-data/list.json");
     let mut buff = String::new();
     file.read_to_string(&mut buff).catch(IO_ERROR);
     let list: Vec<Entry> = serde_json::from_str(&buff).catch(SERDE_ERROR);
@@ -131,6 +131,6 @@ pub fn scrt_list_show() {
         return;
     }
     for entry in list {
-        println!("{}", entry.to_string());
+        println!("{}", entry);
     }
 }
