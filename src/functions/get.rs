@@ -1,4 +1,5 @@
-use std::process::exit;
+use crate::errors::codes::INVALID_ARGUMENTS;
+use crate::errors::exiting::end;
 
 /// The get function prints the hash calculated as a combination of the website, username and key strings.
 /// The strategy used distantly resembles the AES approach.
@@ -9,8 +10,7 @@ use std::process::exit;
 /// Execution stops if the key doesn't have the correct length.
 pub fn scrt_get(website: Vec<char>, username: Vec<char>, key: Vec<char>) {
     if key.len() != 8 {
-        eprintln!("ERROR: wrong key size!");
-        exit(1)
+        end(INVALID_ARGUMENTS)
     }
     let mut first_block: Vec<u8> = get_block(&website, &key);
     let mut second_block: Vec<u8> = get_block(&username, &key);
