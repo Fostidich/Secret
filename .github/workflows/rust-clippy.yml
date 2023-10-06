@@ -10,9 +10,9 @@
 name: rust-clippy analyze
 
 on:
-  push:
-    branches-ignore:
-      - '*'
+  pull_request:
+    types:
+      - closed
 
 jobs:
   rust-clippy-analyze:
