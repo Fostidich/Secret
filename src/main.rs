@@ -14,7 +14,7 @@ mod functions {
 use std::env;
 use functions::get::scrt_get;
 use functions::help::scrt_help;
-use functions::list::{scrt_list_add, scrt_list_remove, scrt_list_show};
+use functions::list::{scrt_list_add, scrt_list_remove, scrt_list_show, scrt_list_destroy};
 use util::err_codes::{INVALID_ARGUMENTS, NO_COMMAND_PROVIDED, UNKNOWN_COMMAND};
 use util::exiting::end;
 
@@ -50,6 +50,8 @@ fn main() {
             scrt_list_remove(args[3].chars().collect(), args[4].chars().collect())
         } else if args[2] == "show" {
             scrt_list_show()
+        } else if args[2] == "destroy" {
+            scrt_list_destroy()
         } else {
             end(UNKNOWN_COMMAND)
         }
