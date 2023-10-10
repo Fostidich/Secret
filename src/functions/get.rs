@@ -1,3 +1,4 @@
+use crate::functions::list::check_addition;
 use crate::util::err_codes::INVALID_ARGUMENTS;
 use crate::util::exiting::end;
 
@@ -35,7 +36,7 @@ pub fn scrt_get(website: Vec<char>, username: Vec<char>, key: Vec<char>) {
     put_uppercase(&mut result, key_ref);
     let to_print: String = result.into_iter().collect();
     println!("{}", to_print);
-    // TODO: add_to_list()
+    check_addition(website.into_iter().collect(), username.into_iter().collect())
 }
 
 /// Given a char, it returns a number between 0 and 63.
@@ -58,8 +59,9 @@ fn get_block(chars: &[char], key: &[char]) -> Vec<u8> {
             i += 1
         }
     }
-    if i > 0 {
-        i -= 1;
+    match i.checked_sub(1) {
+        Some(n) => i = n,
+        None => {}
     }
     for ch in chars {
         result[i] += get_value(ch);
