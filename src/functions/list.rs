@@ -1,9 +1,9 @@
-use std::fmt;
+use std::{fmt, fs, io};
 use std::fmt::Formatter;
 use std::io::{Read, Seek, SeekFrom, Write};
 use chrono::{Datelike, Local};
 use serde::{Deserialize, Serialize};
-use crate::util::err_codes::{FILE_FAILURE, IO_ERROR, SERDE_ERROR};
+use crate::util::err_codes::{FILE_FAILURE, IO_ERROR, SERDE_ERROR, UNKNOWN_ERROR};
 use crate::util::exiting::Catch;
 use crate::util::json::get_from_json;
 use crate::util::file::open_file;
@@ -134,4 +134,48 @@ pub fn scrt_list_show() {
     for entry in list {
         println!("{}", entry);
     }
+}
+
+/// All the entries of the list are removed.
+/// A message asking to confirm pops up before deletion.
+pub fn scrt_list_destroy() {
+    print!("Do you really want to destroy the list of entries (write CONFIRM to continue)? ");
+    io::stdout().flush().catch(UNKNOWN_ERROR);
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).catch(UNKNOWN_ERROR);
+    if !input.trim().to_string().eq("CONFIRM") {
+        println!("Nothing was destroyed.");
+        return
+    }
+    match fs::remove_file(LIST_PATH) {
+        Ok(_) => println!("List file destroyed."),
+        Err(_) => println!("Nothing to destroy.")
+    }
+}
+
+/// After a get, if the entry is not present in the list, user is asked if he
+/// wants to add it.
+pub fn check_addition(website: String, username: String) {
+    let date_stamp = Local::now();
+    let entry: Entry = Entry {
+        date: Date {
+            day: date_stamp.day() as u8,
+            month: date_stamp.month() as u8,
+            year: date_stamp.year() as u16,
+        },
+        website: website.clone(),
+        username: username.clone(),
+    };
+    let list: Vec<Entry> = get_from_json::<Vec<Entry>>(LIST_PATH);
+    if list.contains(&entry) {
+        return
+    }
+    print!("Do you want to add entry to the list (Y/n)? ");
+    io::stdout().flush().catch(UNKNOWN_ERROR);
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).catch(UNKNOWN_ERROR);
+    if !input.starts_with("Y") && !input.starts_with("y") {
+        return
+    }
+    scrt_list_add(website, username)
 }
