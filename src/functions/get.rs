@@ -1,5 +1,5 @@
-use crate::errors::codes::INVALID_ARGUMENTS;
-use crate::errors::exiting::end;
+use crate::util::err_codes::INVALID_ARGUMENTS;
+use crate::util::exiting::end;
 
 /// The get function prints the hash calculated as a combination of the website, username and key strings.
 /// The strategy used distantly resembles the AES approach.
@@ -34,7 +34,8 @@ pub fn scrt_get(website: Vec<char>, username: Vec<char>, key: Vec<char>) {
     }
     put_uppercase(&mut result, key_ref);
     let to_print: String = result.into_iter().collect();
-    println!("{}", to_print)
+    println!("{}", to_print);
+    // TODO: add_to_list()
 }
 
 /// Given a char, it returns a number between 0 and 63.
@@ -57,7 +58,7 @@ fn get_block(chars: &[char], key: &[char]) -> Vec<u8> {
             i += 1
         }
     }
-    if i != 0 {
+    if i > 0 {
         i -= 1;
     }
     for ch in chars {

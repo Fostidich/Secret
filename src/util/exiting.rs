@@ -1,6 +1,7 @@
 use std::process::exit;
 
 /// Error code represent a possible error by assigning a number and a message to be written on stderr.
+/// Many codes are stored as public constants in the error codes file.
 pub struct ErrorCode {
     pub(super) name: &'static str,
     pub(super) code: i32,

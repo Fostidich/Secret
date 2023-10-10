@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::errors::exiting::ErrorCode;
+use crate::util::exiting::ErrorCode;
 
 /// Error is to be used just in exceptional cases where no other error code can describe the error.
 pub const UNKNOWN_ERROR: ErrorCode = ErrorCode {
