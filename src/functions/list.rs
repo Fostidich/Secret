@@ -3,9 +3,13 @@ use std::fmt::Formatter;
 use std::io::{Read, Seek, SeekFrom, Write};
 use chrono::{Datelike, Local};
 use serde::{Deserialize, Serialize};
-use crate::errors::codes::{FILE_FAILURE, IO_ERROR, SERDE_ERROR};
-use crate::errors::exiting::Catch;
-use crate::open_file;
+use crate::util::err_codes::{FILE_FAILURE, IO_ERROR, SERDE_ERROR};
+use crate::util::exiting::Catch;
+use crate::util::json::get_from_json;
+use crate::util::file::open_file;
+
+/// Constant stores the default path for here used file.
+const LIST_PATH: &str = "scrt-data/list.json";
 
 /// The struct represent the information of a login entry.
 /// Specifically, the date ([Date]) of the creation, the website name and the username used.
@@ -62,7 +66,7 @@ pub fn scrt_list_add(website: String, username: String) {
         website,
         username,
     };
-    let mut file = open_file("scrt-data/list.json");
+    let mut file = open_file(LIST_PATH);
     let mut buff = String::new();
     file.read_to_string(&mut buff).catch(IO_ERROR);
     let mut list: Vec<Entry> = serde_json::from_str(&buff).catch(SERDE_ERROR);
@@ -96,7 +100,7 @@ pub fn scrt_list_remove(website: String, username: String) {
         website,
         username,
     };
-    let mut file = open_file("scrt-data/list.json");
+    let mut file = open_file(LIST_PATH);
     let mut buff = String::new();
     file.read_to_string(&mut buff).catch(IO_ERROR);
     let mut list: Vec<Entry> = serde_json::from_str(&buff).catch(SERDE_ERROR);
@@ -122,10 +126,7 @@ pub fn scrt_list_remove(website: String, username: String) {
 ///
 /// (See also [Entry])
 pub fn scrt_list_show() {
-    let mut file = open_file("scrt-data/list.json");
-    let mut buff = String::new();
-    file.read_to_string(&mut buff).catch(IO_ERROR);
-    let list: Vec<Entry> = serde_json::from_str(&buff).catch(SERDE_ERROR);
+    let list: Vec<Entry> = get_from_json::<Vec<Entry>>(LIST_PATH);
     if list.is_empty() {
         println!("No entries to show.");
         return;
