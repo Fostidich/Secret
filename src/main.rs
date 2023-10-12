@@ -22,6 +22,9 @@ use crate::functions::list::{scrt_list_renew, scrt_list_reset};
 /// The constants contains the number of pops to be made from the executable path to reach the program root folder.
 const PATH_POPS: u8 = 1;
 
+/// Constant stores the default path for here used file.
+const LIST_PATH: &str = "scrt-data/list.json";
+
 /// Main function checks for input, branching onto requested function.
 ///
 /// # Errors

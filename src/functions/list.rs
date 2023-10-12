@@ -3,24 +3,22 @@ use std::fmt::{Display, Formatter};
 use std::io::{Read, Seek, SeekFrom, Write};
 use chrono::{Datelike, Local};
 use serde::{Deserialize, Serialize};
+use crate::LIST_PATH;
 use crate::util::err_codes::{FILE_FAILURE, IO_ERROR, SERDE_ERROR, UNKNOWN_ERROR};
 use crate::util::exiting::Catch;
 use crate::util::json::get_from_json;
 use crate::util::file::open_file;
-
-/// Constant stores the default path for here used file.
-const LIST_PATH: &str = "scrt-data/list.json";
 
 /// The struct represent the information of a login entry.
 /// Specifically, the date ([Date]) of the creation, the website name and the username used.
 /// Note that two entries can have same website but must have different usernames.
 /// An integer is also stored to remember how many times the password had been changed.
 #[derive(Serialize, Deserialize)]
-struct Entry {
-    date: Date,
-    website: String,
-    username: String,
-    renewed: u8,
+pub(crate) struct Entry {
+    pub date: Date,
+    pub website: String,
+    pub username: String,
+    pub renewed: u8,
 }
 
 impl PartialEq for Entry {
@@ -52,10 +50,10 @@ impl Default for Entry {
 
 /// The struct represent a simple date, with day, month and year.
 #[derive(Serialize, Deserialize, PartialEq, Eq)]
-struct Date {
-    day: u8,
-    month: u8,
-    year: u16,
+pub(crate) struct Date {
+    pub day: u8,
+    pub month: u8,
+    pub year: u16,
 }
 
 impl Display for Date {
