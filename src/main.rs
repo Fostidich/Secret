@@ -17,9 +17,13 @@ use functions::help::scrt_help;
 use functions::list::{scrt_list_add, scrt_list_remove, scrt_list_show, scrt_list_destroy};
 use util::err_codes::{INVALID_ARGUMENTS, NO_COMMAND_PROVIDED, UNKNOWN_COMMAND};
 use util::exiting::end;
+use crate::functions::list::{scrt_list_renew, scrt_list_reset};
 
 /// The constants contains the number of pops to be made from the executable path to reach the program root folder.
 const PATH_POPS: u8 = 1;
+
+/// Constant stores the default path for here used file.
+const LIST_PATH: &str = "scrt-data/list.json";
 
 /// Main function checks for input, branching onto requested function.
 ///
@@ -52,6 +56,10 @@ fn main() {
             scrt_list_show()
         } else if args[2] == "destroy" {
             scrt_list_destroy()
+        } else if args[2] == "renew" {
+            scrt_list_renew(args[3].chars().collect(), args[4].chars().collect())
+        } else if args[2] == "reset" {
+            scrt_list_reset(args[3].chars().collect(), args[4].chars().collect())
         } else {
             end(UNKNOWN_COMMAND)
         }

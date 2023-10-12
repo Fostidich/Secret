@@ -1,6 +1,8 @@
-use crate::functions::list::check_addition;
+use crate::functions::list::{check_addition, Entry};
+use crate::LIST_PATH;
 use crate::util::err_codes::INVALID_ARGUMENTS;
 use crate::util::exiting::end;
+use crate::util::json::get_from_json;
 
 /// The get function prints the hash calculated as a combination of the website, username and key strings.
 /// The strategy used distantly resembles the AES approach.
@@ -9,10 +11,11 @@ use crate::util::exiting::end;
 /// # Errors
 ///
 /// Execution stops if the key doesn't have the correct length.
-pub fn scrt_get(website: Vec<char>, username: Vec<char>, key: Vec<char>) {
+pub fn scrt_get(website: Vec<char>, username: Vec<char>, mut key: Vec<char>) {
     if key.len() != 8 {
         end(INVALID_ARGUMENTS)
     }
+    check_renewed(&website, &username, &mut key);
     let mut first_block: Vec<u8> = get_block(&website, &key);
     let mut second_block: Vec<u8> = get_block(&username, &key);
     let key_ref = &key;
@@ -50,6 +53,17 @@ fn get_value(ch: &char) -> u8 {
     }
 }
 
+/// Given a number, it returns a letter or a digit.
+fn get_char(val: &u8) -> char {
+    match val {
+        36..=61 => (val + 29) as char,
+        10..=35 => (val + 87) as char,
+        0..=9 => (val + 48) as char,
+        62 => '.',
+        _ => '-'
+    }
+}
+
 /// Given a string and a key, a vector of numbers is returned based on input.
 fn get_block(chars: &[char], key: &[char]) -> Vec<u8> {
     let mut result: Vec<u8> = vec![0; 8];
@@ -59,9 +73,8 @@ fn get_block(chars: &[char], key: &[char]) -> Vec<u8> {
             i += 1
         }
     }
-    match i.checked_sub(1) {
-        Some(n) => i = n,
-        None => {}
+    if let Some(n) = i.checked_sub(1) {
+        i = n;
     }
     for ch in chars {
         result[i] += get_value(ch);
@@ -230,4 +243,32 @@ fn put_uppercase(block: &mut [char], key: &[char]) {
         }
         _ => {}
     }
+}
+
+/// In case an entry has been renewed, the get function automatically get the renewed parameter
+/// and modifies the entry accordingly to get the correct relative renewed hash.
+fn check_renewed(website: &Vec<char>, username: &Vec<char>, key: &mut Vec<char>) {
+    let entry = Entry {
+        date: Default::default(),
+        website: website.into_iter().collect(),
+        username: username.into_iter().collect(),
+        renewed: 0,
+    };
+    let list: Vec<Entry> = get_from_json::<Vec<Entry>>(LIST_PATH);
+    if !list.contains(&entry) {
+        return
+    }
+    let mut ren: u8 = 0;
+    for el in list.iter() {
+        if el == &entry {
+            if el.renewed != 0 {
+                ren = el.renewed;
+                break
+            } else {
+                return
+            }
+        }
+    }
+    let last = key.len()-1;
+    key[last] = get_char(&(get_value(&key[last])+ren))
 }
