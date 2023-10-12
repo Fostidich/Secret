@@ -59,9 +59,8 @@ fn get_block(chars: &[char], key: &[char]) -> Vec<u8> {
             i += 1
         }
     }
-    match i.checked_sub(1) {
-        Some(n) => i = n,
-        None => {}
+    if let Some(n) = i.checked_sub(1) {
+        i = n;
     }
     for ch in chars {
         result[i] += get_value(ch);
