@@ -1,8 +1,12 @@
+use std::io;
+use std::io::Write;
+use rpassword::read_password;
 use crate::functions::list::{check_addition, Entry};
 use crate::LIST_PATH;
-use crate::util::err_codes::INVALID_ARGUMENTS;
-use crate::util::exiting::end;
+use crate::util::err_codes::{INVALID_ARGUMENTS, UNKNOWN_ERROR};
+use crate::util::exiting::{Catch, end};
 use crate::util::json::get_from_json;
+extern crate rpassword;
 
 /// The get function prints the hash calculated as a combination of the website, username and key strings.
 /// The strategy used distantly resembles the AES approach.
@@ -11,7 +15,10 @@ use crate::util::json::get_from_json;
 /// # Errors
 ///
 /// Execution stops if the key doesn't have the correct length.
-pub fn scrt_get(website: Vec<char>, username: Vec<char>, mut key: Vec<char>) {
+pub fn scrt_get(website: Vec<char>, username: Vec<char>) {
+    print!("Personal key: ");
+    io::stdout().flush().catch(UNKNOWN_ERROR);
+    let mut key: Vec<char> = read_password().catch(UNKNOWN_ERROR).chars().collect();
     if key.len() != 8 {
         end(INVALID_ARGUMENTS)
     }
@@ -250,8 +257,8 @@ fn put_uppercase(block: &mut [char], key: &[char]) {
 fn check_renewed(website: &Vec<char>, username: &Vec<char>, key: &mut Vec<char>) {
     let entry = Entry {
         date: Default::default(),
-        website: website.into_iter().collect(),
-        username: username.into_iter().collect(),
+        website: website.iter().collect(),
+        username: username.iter().collect(),
         renewed: 0,
     };
     let list: Vec<Entry> = get_from_json::<Vec<Entry>>(LIST_PATH);
