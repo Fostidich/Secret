@@ -189,7 +189,7 @@ pub fn scrt_list_renew(website: String, username: String) {
         println!("Entry not present.");
         return;
     }
-    for mut el in list.iter_mut() {
+    for el in list.iter_mut() {
         if el == &entry {
             el.renewed += 1;
             break

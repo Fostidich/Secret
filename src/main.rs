@@ -40,10 +40,10 @@ fn main() {
         }
         scrt_help();
     } else if args[1] == "get" {
-        if args.len() != 5 {
+        if args.len() != 4 {
             end(INVALID_ARGUMENTS)
         }
-        scrt_get(args[2].chars().collect(), args[3].chars().collect(), args[4].chars().collect());
+        scrt_get(args[2].chars().collect(), args[3].chars().collect());
     } else if args[1] == "list" {
         if args.len() != 5 && args.len() != 3 {
             end(INVALID_ARGUMENTS)
